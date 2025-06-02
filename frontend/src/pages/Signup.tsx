@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../../firebase.js';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -24,12 +24,9 @@ const Signup = () => {
     setLoading(true);
     try {
       const res = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(res.user, {
-        displayName: displayName,
-      });
-
-      toast.success('Signup successful!');
-      setTimeout(() => navigate('/'), 1000);
+      await updateProfile(res.user, { displayName });
+      toast.success('Signup successful! Check your email for verification.');
+      setTimeout(() => navigate('/verify-email'), 1000);
     } catch (error) {
       if (error.code === 'auth/email-already-in-use') {
         toast.error('This email is already registered. Redirecting to login...');
@@ -44,6 +41,17 @@ const Signup = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      toast.success('Signup with Google successful!');
+      setTimeout(() => navigate('/'), 1000);
+    } catch (error) {
+      toast.error('Google signup failed. Please try again.');
     }
   };
 
@@ -97,6 +105,20 @@ const Signup = () => {
           disabled={loading}
         >
           {loading ? 'Signing up...' : 'Sign Up'}
+        </button>
+
+        <div className="flex items-center my-4">
+          <hr className="flex-grow border-t border-gray-300" />
+          <span className="px-3 text-gray-500 font-medium">OR</span>
+          <hr className="flex-grow border-t border-gray-300" />
+        </div>
+
+        <button
+          type="button"
+          onClick={handleGoogleSignup}
+          className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 w-full"
+        >
+          Sign Up with Google
         </button>
 
         <p className="text-center mt-6 text-sm font-light">

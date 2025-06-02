@@ -1,5 +1,10 @@
-import React, { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useState } from 'react';
+import {
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  sendPasswordResetEmail,
+} from 'firebase/auth';
 import { auth } from '../../firebase.js';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
@@ -11,6 +16,8 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [showResetModal, setShowResetModal] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -22,7 +29,6 @@ const Login = () => {
     setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log(userCredential.user);
       toast.success('Login successful!');
       setTimeout(() => navigate('/'), 1000);
     } catch (error) {
@@ -30,11 +36,7 @@ const Login = () => {
         toast.error('No user found with this email.');
       } else if (error.code === 'auth/wrong-password') {
         toast.error('Incorrect password.');
-      }
-      else if(error.code==='auth/invalid-credential'){
-        toast.error('No user found with this email.Enter correct email or go to signup');
-      }
-       else {
+      } else {
         toast.error(error.message);
       }
     } finally {
@@ -42,9 +44,36 @@ const Login = () => {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      toast.success('Login with Google successful!');
+      setTimeout(() => navigate('/'), 1000);
+    } catch (error) {
+      toast.error('Google login failed. Please try again.');
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    if (!resetEmail) {
+      toast.warning('Please enter your email.');
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, resetEmail);
+      toast.success('Password reset email sent. Check your inbox!');
+      setShowResetModal(false);
+    } catch (error) {
+      toast.error('Failed to send reset email. Please try again.');
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <ToastContainer position="top-center" autoClose={2000} />
+
       <form
         onSubmit={handleLogin}
         className="bg-white p-12 rounded-lg shadow-lg w-full max-w-md"
@@ -86,17 +115,66 @@ const Login = () => {
           {loading ? 'Logging in...' : 'Login'}
         </button>
 
-        <p className="text-center mt-6 text-sm font-light">
-          Don't have an account?
+        <div className="flex items-center my-4">
+          <hr className="flex-grow border-t border-gray-300" />
+          <span className="px-3 text-gray-500 font-medium">OR</span>
+          <hr className="flex-grow border-t border-gray-300" />
+        </div>
+
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 w-full"
+        >
+          Login with Google
+        </button>
+
+        <div className="flex justify-between mt-4">
+          <button
+            type="button"
+            onClick={() => setShowResetModal(true)}
+            className="text-cyan-600 font-medium hover:underline"
+          >
+            Forgot Password?
+          </button>
           <button
             type="button"
             onClick={() => navigate('/signup')}
-            className="ml-1 text-cyan-600 font-medium hover:underline"
+            className="text-cyan-600 font-medium hover:underline"
           >
             Sign Up
           </button>
-        </p>
+        </div>
       </form>
+
+      {showResetModal && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+            <h3 className="text-xl font-bold mb-4 text-blue-600">Reset Password</h3>
+            <input
+              className="border p-3 w-full mb-4 rounded"
+              type="email"
+              placeholder="Enter your email"
+              onChange={(e) => setResetEmail(e.target.value)}
+              value={resetEmail}
+            />
+            <div className="flex justify-between">
+              <button
+                onClick={handlePasswordReset}
+                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+              >
+                Send Reset Email
+              </button>
+              <button
+                onClick={() => setShowResetModal(false)}
+                className="bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
