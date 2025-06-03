@@ -1,6 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import {
+  createUserWithEmailAndPassword,
+  updateProfile,
+  signInWithPopup,
+  GoogleAuthProvider,
+} from 'firebase/auth';
 import { auth } from '../../firebase.js';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -10,23 +15,36 @@ const Signup = () => {
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async (e) => {
     e.preventDefault();
-
-    if (!email || !password || !displayName) {
+    if (!email || !password || !displayName || !role) {
       toast.warning('Please fill in all fields.');
       return;
     }
-
     setLoading(true);
     try {
       const res = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(res.user, { displayName });
-      toast.success('Signup successful! Check your email for verification.');
-      setTimeout(() => navigate('/verify-email'), 1000);
+      const token = await res.user.getIdToken();
+      const response = await fetch('http://localhost:5000/api/users/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ username: displayName, email, role }),
+      });
+
+      if (response.ok) {
+        toast.success('Signup successful!');
+        setTimeout(() => navigate('/dashboard'), 1000);
+      } else {
+        toast.error('Failed to save user data. Please try again.');
+      }
     } catch (error) {
       if (error.code === 'auth/email-already-in-use') {
         toast.error('This email is already registered. Redirecting to login...');
@@ -48,26 +66,44 @@ const Signup = () => {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      toast.success('Signup with Google successful!');
-      setTimeout(() => navigate('/'), 1000);
+      const token = await result.user.getIdToken();
+      const response = await fetch('http://localhost:5000/api/users/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          username: result.user.displayName,
+          email: result.user.email,
+          role,
+        }),
+      });
+
+      if (response.ok) {
+        toast.success('Signup with Google successful!');
+        setTimeout(() => navigate('/dashboard'), 1000);
+      } else {
+        toast.error('Failed to save Google user data.');
+      }
     } catch (error) {
       toast.error('Google signup failed. Please try again.');
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <ToastContainer position="top-center" autoClose={2000} />
       <form
         onSubmit={handleSignup}
-        className="bg-white p-12 rounded-lg shadow-lg w-full max-w-md"
+        className="bg-white p-6 sm:p-8 md:p-10 lg:p-12 rounded-lg shadow-lg w-full max-w-sm sm:max-w-md lg:max-w-lg"
       >
-        <h2 className="text-2xl font-bold mb-6 text-center text-blue-600">
-          Sign Up
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 lg:mb-6 text-center text-blue-600">
+          Create an Account
         </h2>
 
         <input
-          className="border p-3 w-full mb-4 mt-3 rounded"
+          className="border p-3 w-full mb-3 sm:mb-4 rounded"
           type="text"
           placeholder="User Name"
           onChange={(e) => setDisplayName(e.target.value)}
@@ -75,14 +111,14 @@ const Signup = () => {
         />
 
         <input
-          className="border p-3 w-full mb-4 mt-3 rounded"
+          className="border p-3 w-full mb-3 sm:mb-4 rounded"
           type="email"
           placeholder="Email"
           onChange={(e) => setEmail(e.target.value)}
           value={email}
         />
 
-        <div className="relative mb-4 mt-3">
+        <div className="relative mb-3 sm:mb-4">
           <input
             className="border p-3 w-full pr-20 rounded"
             type={showPassword ? 'text' : 'password'}
@@ -98,6 +134,16 @@ const Signup = () => {
             {showPassword ? 'Hide' : 'Show'}
           </button>
         </div>
+
+        <select
+          className="border p-3 w-full mb-3 sm:mb-4 rounded"
+          onChange={(e) => setRole(e.target.value)}
+          value={role}
+        >
+          <option value="">Select Role</option>
+          <option value="Attendee">Attendee</option>
+          <option value="Organizer">Organizer</option>
+        </select>
 
         <button
           className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 w-full disabled:opacity-50"
@@ -121,7 +167,7 @@ const Signup = () => {
           Sign Up with Google
         </button>
 
-        <p className="text-center mt-6 text-sm font-light">
+        <p className="text-center mt-6 text-sm sm:text-base font-light">
           Already have an account?
           <button
             type="button"
