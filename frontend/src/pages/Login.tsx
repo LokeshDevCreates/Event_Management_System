@@ -21,39 +21,69 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
     if (!email || !password) {
       toast.warning('Please fill in all fields.');
       return;
     }
 
     setLoading(true);
+
     try {
+      // Step 1: Authenticate with Firebase
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+      // Step 2: Fetch user details (including role) from backend using email
+      const response = await fetch(`http://localhost:5000/api/users/${encodeURIComponent(email)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch user details from backend.');
+      }
+
+      const userData = await response.json();
+
+      // Extract role from fetched user data
+      const { role } = userData;
+
       toast.success('Login successful!');
-      setTimeout(() => navigate('/'), 1000);
+
+      // Step 3: Navigate based on role
+      if (role === 'Organizer') {
+        navigate('/organizer-dashboard');
+      } else if (role === 'Attendee') {
+        navigate('/attendee-dashboard');
+      } else {
+        toast.error('Unknown role. Please contact support.');
+      }
     } catch (error) {
+      // Handle Firebase auth errors
       if (error.code === 'auth/user-not-found') {
         toast.error('No user found with this email.');
       } else if (error.code === 'auth/wrong-password') {
         toast.error('Incorrect password.');
       } else {
-        toast.error(error.message);
+        toast.error(error.message || 'Login failed. Please try again.');
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleLogin = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      toast.success('Login with Google successful!');
-      setTimeout(() => navigate('/'), 1000);
-    } catch (error) {
-      toast.error('Google login failed. Please try again.');
-    }
-  };
+  // const handleGoogleLogin = async () => {
+  //   const provider = new GoogleAuthProvider();
+  //   try {
+  //     const result = await signInWithPopup(auth, provider);
+  //     toast.success('Login with Google successful!');
+  //     setTimeout(() => navigate('/'), 1000);
+  //   } catch (error) {
+  //     toast.error('Google login failed. Please try again.');
+  //   }
+  // };
 
   const handlePasswordReset = async () => {
     if (!resetEmail) {
@@ -113,20 +143,6 @@ const Login = () => {
           disabled={loading}
         >
           {loading ? 'Logging in...' : 'Login'}
-        </button>
-
-        <div className="flex items-center my-4">
-          <hr className="flex-grow border-t border-gray-300" />
-          <span className="px-3 text-gray-500 font-medium text-sm sm:text-base">OR</span>
-          <hr className="flex-grow border-t border-gray-300" />
-        </div>
-
-        <button
-          type="button"
-          onClick={handleGoogleLogin}
-          className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 w-full text-sm sm:text-base"
-        >
-          Login with Google
         </button>
 
         <div className="flex justify-between mt-4">
