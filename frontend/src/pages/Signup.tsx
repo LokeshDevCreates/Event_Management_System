@@ -30,18 +30,18 @@ const Signup = () => {
       const res = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(res.user, { displayName });
       const token = await res.user.getIdToken();
-      const response = await fetch('http://localhost:5000/api/users/signup', {
+      const response = await fetch('http://localhost:5000/api/users/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ username: displayName, email, role }),
+        body: JSON.stringify({ username: displayName, email, role, password }),
       });
 
       if (response.ok) {
         toast.success('Signup successful!');
-        setTimeout(() => navigate('/dashboard'), 1000);
+        setTimeout(() => navigate('/login'), 1000);
       } else {
         toast.error('Failed to save user data. Please try again.');
       }
@@ -67,7 +67,7 @@ const Signup = () => {
     try {
       const result = await signInWithPopup(auth, provider);
       const token = await result.user.getIdToken();
-      const response = await fetch('http://localhost:5000/api/users/signup', {
+      const response = await fetch('http://localhost:5000/api/users/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -82,7 +82,7 @@ const Signup = () => {
 
       if (response.ok) {
         toast.success('Signup with Google successful!');
-        setTimeout(() => navigate('/dashboard'), 1000);
+        setTimeout(() => navigate('/login'), 1000);
       } else {
         toast.error('Failed to save Google user data.');
       }
