@@ -55,6 +55,8 @@ const Login = () => {
         navigate('/organizer-dashboard');
       } else if (role === 'Attendee') {
         navigate('/attendee-dashboard');
+      } else if (role === 'Admin') {
+        navigate('/admin-dashboard');
       } else {
         toast.error('Unknown role. Please contact support.');
       }
