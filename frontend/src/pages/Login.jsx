@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import {
   signInWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
   sendPasswordResetEmail,
 } from 'firebase/auth';
 import { auth } from '../../firebase.js';
@@ -32,7 +30,7 @@ const Login = () => {
     try {
       // Step 1: Authenticate with Firebase
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-
+      console.log('User logged in:', userCredential.user);
       // Step 2: Fetch user details (including role) from backend using email
       const response = await fetch(`http://localhost:5000/api/users/${encodeURIComponent(email)}`, {
         method: 'GET',
@@ -74,17 +72,6 @@ const Login = () => {
     }
   };
 
-  // const handleGoogleLogin = async () => {
-  //   const provider = new GoogleAuthProvider();
-  //   try {
-  //     const result = await signInWithPopup(auth, provider);
-  //     toast.success('Login with Google successful!');
-  //     setTimeout(() => navigate('/'), 1000);
-  //   } catch (error) {
-  //     toast.error('Google login failed. Please try again.');
-  //   }
-  // };
-
   const handlePasswordReset = async () => {
     if (!resetEmail) {
       toast.warning('Please enter your email.');
@@ -96,6 +83,7 @@ const Login = () => {
       toast.success('Password reset email sent. Check your inbox!');
       setShowResetModal(false);
     } catch (error) {
+      console.error('Error sending password reset email:', error);
       toast.error('Failed to send reset email. Please try again.');
     }
   };

@@ -22,15 +22,20 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'Invalid role selected' });
     }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-    console.log('Password hashed successfully.');
+    // Conditional password handling for OAuth users
+    let hashedPassword = null;
+    if (password) {
+      hashedPassword = await bcrypt.hash(password, 10);
+      console.log('Password hashed successfully.');
+    } else {
+      console.log('Password not provided for OAuth user.');
+    }
 
     // Save the user
     const newUser = new User({
       username,
       email,
-      password: hashedPassword,
+      password: hashedPassword, // This can be null for OAuth users
       role,
     });
     await newUser.save();
@@ -67,10 +72,17 @@ const loginUser = async (req, res) => {
     }
 
     // Validate password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      console.log('Invalid password for:', email);
-      return res.status(401).json({ message: 'Invalid password' });
+    if (user.password) {
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+        console.log('Invalid password for:', email);
+        return res.status(401).json({ message: 'Invalid password' });
+      }
+    } else {
+      console.log('Password-based login attempted for an OAuth user:', email);
+      return res.status(403).json({
+        message: 'Password-based login not allowed for OAuth users',
+      });
     }
 
     // Respond with user details
