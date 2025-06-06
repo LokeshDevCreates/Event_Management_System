@@ -13,7 +13,7 @@ const registerUser = async (req, res) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       console.log('User already exists:', email);
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ message: 'User already exists. Try logging in instead.' });
     }
 
     // Validate role (no toLowerCase used)

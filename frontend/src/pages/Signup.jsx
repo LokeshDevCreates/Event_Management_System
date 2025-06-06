@@ -85,47 +85,52 @@ const Signup = () => {
   };
 
   const handleGoogleSignup = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const googleEmail = result.user.email;
-      const token = await result.user.getIdToken();
+  const provider = new GoogleAuthProvider();
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const googleEmail = result.user.email;
+    const token = await result.user.getIdToken();
 
-      if (!googleDisplayName || !googleRole) {
-        toast.warning("Please provide additional details for Google Signup.");
-        return;
-      }
-
-      const response = await fetch("http://localhost:5000/api/users/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          username: googleDisplayName,
-          email: googleEmail,
-          role: googleRole,
-          password: null,
-        }),
-      });
-
-      if (response.ok) {
-        toast.success("Signup with Google successful!");
-        const userData = await response.json();
-        navigateByRole(userData.role);
-      } else {
-        toast.error("Failed to save Google user data.");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Google signup failed. Please try again.");
-    } finally {
-      setShowGoogleModal(false);
-      setGoogleDisplayName("");
-      setGoogleRole("");
+    if (!googleDisplayName || !googleRole) {
+      toast.warning("Please provide additional details for Google Signup.");
+      return;
     }
-  };
+
+    const response = await fetch("http://localhost:5000/api/users/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        username: googleDisplayName,
+        email: googleEmail,
+        role: googleRole,
+        password: null,
+      }),
+    });
+
+    if (response.ok) {
+      toast.success("Signup with Google successful!");
+      const userData = await response.json();
+      navigateByRole(userData.role);
+    } else {
+      // Attempt to parse backend error message
+      const errorData = await response.json();
+      const message =
+        errorData?.message || "Failed to save Google user data.";
+      toast.error(message);
+    }
+  } catch (error) {
+    console.error(error);
+    toast.error("Google signup failed. Please try again.");
+  } finally {
+    setShowGoogleModal(false);
+    setGoogleDisplayName("");
+    setGoogleRole("");
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">

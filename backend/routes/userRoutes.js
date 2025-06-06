@@ -24,4 +24,15 @@ router.get('/:email', async (req, res) => {
   }
 });
 
+// GET /api/users - Fetch all users
+router.get('/', async (req, res) => {
+  try {
+    const users = await User.find().select('username email role createdAt updatedAt');
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Server error while fetching users' });
+  }
+});
+
 module.exports = router;
