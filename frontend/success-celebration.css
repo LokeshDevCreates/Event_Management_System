@@ -1,0 +1,27 @@
+.celebration-wrapper {
+  text-align: center;
+  padding: 50px;
+  font-size: 2rem;
+  color: #2e7d32;
+}
+
+.confetti {
+  position: fixed;
+  top: 0;
+  width: 10px;
+  height: 20px;
+  background-color: hsl(var(--hue), 70%, 50%);
+  animation: fall linear forwards;
+  z-index: 9999;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(100vh) rotateZ(360deg);
+    opacity: 0;
+  }
+}
+
+:root {
+  --hue: 360;
+}
