@@ -1,7 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const { registerOrganizer } = require('../controllers/organizerController');
+const { registerOrganizer, loginOrganizer } = require('../controllers/organizerController');
+const upload = require('../middlewares/upload');
 
-router.post('/register', registerOrganizer); //POST api/organizers/register
+// Registration with image upload
+router.post(
+  '/register',
+  upload.fields([
+    { name: 'profileImage', maxCount: 1 },
+    { name: 'eventImages', maxCount: 5 }
+  ]),
+  registerOrganizer
+);
+
+// Login
+router.post('/login', loginOrganizer);
 
 module.exports = router;
