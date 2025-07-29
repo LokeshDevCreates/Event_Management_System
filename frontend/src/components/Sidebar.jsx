@@ -1,60 +1,49 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import {
+  FaTachometerAlt,
+  FaCalendarPlus,
+  FaClipboardList,
+  FaRegCalendar,
+  FaUser,
+  FaCogs,
+} from "react-icons/fa";
+import "./sidebar.css";
 
-const Sidebar = () => {
+export const Sidebar = () => {
   return (
-    <div className="sidebar bg-light p-3" style={{ height: "100vh", width: "220px" }}>
-      <h5 className="mb-4">Organizer Panel</h5>
-      <nav className="nav flex-column">
+    <div className="sidebar glass-sidebar d-flex flex-column p-3">
+      <h4 className="text-white mb-4">📅 Organizer Panel</h4>
 
-        <NavLink
-          to="/organizer"
-          className={({ isActive }) =>
-            `nav-link ${isActive ? "active fw-bold text-primary" : "text-dark"}`
-          }
-        >
-          Dashboard
-        </NavLink>
+      <NavLink to="/organizer" className="nav-link">
+        <FaTachometerAlt className="me-2" />
+        Dashboard
+      </NavLink>
 
-        <NavLink
-          to="/manage-events"
-          className={({ isActive }) =>
-            `nav-link ${isActive ? "active fw-bold text-primary" : "text-dark"}`
-          }
-        >
-          Manage Events
-        </NavLink>
+      <NavLink to="/manage-events" className="nav-link">
+        <FaCalendarPlus className="me-2" />
+        Create Events
+      </NavLink>
 
-        <NavLink
-          to="/manage-venues"
-          className={({ isActive }) =>
-            `nav-link ${isActive ? "active fw-bold text-primary" : "text-dark"}`
-          }
-        >
-          Manage Venues
-        </NavLink>
+      <NavLink to="/view-bookings" className="nav-link">
+        <FaClipboardList className="me-2" />
+        Events
+      </NavLink>
 
-        <NavLink
-          to="/view-bookings"
-          className={({ isActive }) =>
-            `nav-link ${isActive ? "active fw-bold text-primary" : "text-dark"}`
-          }
-        >
-          View Bookings
-        </NavLink>
+      <NavLink to="/show-events" className="nav-link">
+        <FaRegCalendar className="me-2" />
+        View Bookings
+      </NavLink>
 
-        <NavLink
-          to="/organizer-profile"
-          className={({ isActive }) =>
-            `nav-link ${isActive ? "active fw-bold text-primary" : "text-dark"}`
-          }
-        >
-          View Profile
-        </NavLink>
+      <NavLink to="/organizer-profile" className="nav-link">
+        <FaUser className="me-2" />
+        Profile
+      </NavLink>
 
-      </nav>
+      <NavLink to="/settings" className="nav-link">
+        <FaCogs className="me-2" />
+        Settings
+      </NavLink>
     </div>
   );
 };
-
-export default Sidebar;
