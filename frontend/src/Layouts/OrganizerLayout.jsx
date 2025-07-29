@@ -1,12 +1,10 @@
 import React from "react";
 import { Outlet, Link } from "react-router-dom";
 import {
-  AppBar,
   Box,
   CssBaseline,
   Divider,
   Drawer,
-  IconButton,
   List,
   ListItem,
   ListItemIcon,
@@ -14,164 +12,100 @@ import {
   Toolbar,
   Typography,
   Avatar,
-  InputBase,
-  Badge,
 } from "@mui/material";
 import { styled } from "@mui/system";
-import MenuIcon from "@mui/icons-material/Menu";
-import SearchIcon from "@mui/icons-material/Search";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import EventIcon from "@mui/icons-material/Event";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
 import BookOnlineIcon from "@mui/icons-material/BookOnline";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PersonIcon from "@mui/icons-material/Person";
-import LogoutIcon from "@mui/icons-material/Logout";
+import SettingsIcon from "@mui/icons-material/Settings";
 
 const drawerWidth = 240;
 
-const Search = styled("div")(({ theme }) => ({
-  position: "relative",
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: "#f1f3f4",
-  marginLeft: 0,
-  width: "100%",
-  [theme.breakpoints.up("sm")]: {
-    marginLeft: theme.spacing(1),
-    width: "auto",
-  },
-}));
-
-const SearchIconWrapper = styled("div")(({ theme }) => ({
-  padding: theme.spacing(0, 2),
+const GradientSidebar = styled("div")({
   height: "100%",
-  position: "absolute",
-  pointerEvents: "none",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-}));
+  background: "linear-gradient(145deg, #1e3c72, #2a5298)",
+  color: "#fff",
+  padding: "16px 0",
+  backdropFilter: "blur(8px)",
+  boxShadow: "4px 0 15px rgba(0,0,0,0.2)",
+});
 
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: "inherit",
-  paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-  width: "100%",
-}));
+const StyledListItem = styled(ListItem)({
+  borderRadius: "10px",
+  margin: "8px",
+  transition: "all 0.3s ease-in-out",
+  "&:hover": {
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    transform: "translateX(5px)",
+  },
+});
 
-const OrganizerLayout = (props) => {
-  const [mobileOpen, setMobileOpen] = React.useState(false);
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
+const OrganizerLayout = () => {
+  const menuItems = [
+    { text: "Dashboard", icon: <DashboardIcon />, path: "/organizer" },
+    { text: "Create Events", icon: <EventIcon />, path: "/manage-events" },
+    { text: "View Bookings", icon: <BookOnlineIcon />, path: "/view-bookings" },
+    { text: "Events", icon: <LocationOnIcon />, path: "/show-events" },
+    { text: "Profile", icon: <PersonIcon />, path: "/organizer-profile" },
+    { text: "Settings", icon: <SettingsIcon />, path: "/organizer-settings" },
+  ];
 
   const drawer = (
-    <div>
+    <GradientSidebar>
       <Toolbar>
-        <Typography variant="h6" noWrap>
+        <Typography variant="h6" noWrap sx={{ px: 2 }}>
           EBMS Organizer
         </Typography>
       </Toolbar>
-      <Divider />
+      <Divider sx={{ borderColor: "rgba(255,255,255,0.2)" }} />
       <List>
-        {[
-  "Dashboard", "Manage Venues", "Manage Events", "Show Events",
-  "View Bookings", "Profile", "Logout"
-].map((text, index) => {
-  const icons = [
-    <DashboardIcon />, <LocationOnIcon />, <EventIcon />, <EventIcon />,
-    <BookOnlineIcon />, <PersonIcon />, <LogoutIcon />
-  ];
-
-  const paths = [
-    "/organizer",
-    "/manage-venues",
-    "/manage-events",
-    "/show-events",
-    "/view-bookings",
-    "/organizer-profile",
-    "/organizer-login"
-  ];
-
-          return (
-            <ListItem button key={text} component={Link} to={paths[index]}>
-              <ListItemIcon>{icons[index]}</ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItem>
-          );
-        })}
+        {menuItems.map((item) => (
+          <StyledListItem button key={item.text} component={Link} to={item.path}>
+            <ListItemIcon sx={{ color: "white" }}>{item.icon}</ListItemIcon>
+            <ListItemText primary={item.text} sx={{ color: "white" }} />
+          </StyledListItem>
+        ))}
       </List>
-    </div>
+    </GradientSidebar>
   );
 
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
-      <AppBar position="fixed" sx={{ zIndex: 1201, background: "#6200ea" }}>
-        <Toolbar sx={{ justifyContent: "space-between" }}>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ display: { sm: "none" } }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Search>
-            <SearchIconWrapper>
-              <SearchIcon />
-            </SearchIconWrapper>
-            <StyledInputBase placeholder="Search…" inputProps={{ "aria-label": "search" }} />
-          </Search>
-          <Box display="flex" alignItems="center" gap={2}>
-            <Badge badgeContent={4} color="error">
-              <NotificationsIcon color="inherit" />
-            </Badge>
-            <Avatar alt="Organizer" src="/static/images/avatar/1.jpg" />
-          </Box>
-        </Toolbar>
-      </AppBar>
+
+      {/* Sidebar */}
       <Box
         component="nav"
         sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-        aria-label="mailbox folders"
+        aria-label="sidebar"
       >
-        <Drawer
-          variant="temporary"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{ keepMounted: true }}
-          sx={{
-            display: { xs: "block", sm: "none" },
-            "& .MuiDrawer-paper": {
-              boxSizing: "border-box",
-              width: drawerWidth,
-            },
-          }}
-        >
-          {drawer}
-        </Drawer>
         <Drawer
           variant="permanent"
           sx={{
             display: { xs: "none", sm: "block" },
-            "& .MuiDrawer-paper": {
-              boxSizing: "border-box",
-              width: drawerWidth,
-            },
+            "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
           }}
           open
         >
           {drawer}
         </Drawer>
       </Box>
-      <Box component="main" sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}>
+
+      {/* Main Content Area */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          width: { sm: `calc(100% - ${drawerWidth}px)` },
+        }}
+      >
         <Toolbar />
         <Outlet />
       </Box>
     </Box>
-    
   );
 };
 
